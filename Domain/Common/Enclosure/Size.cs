@@ -10,7 +10,7 @@ namespace ZooAnimalManagement.API.Domain.Common.Enclosure
         public static readonly Size Large = new Size(nameof(Large));
         public static readonly Size Huge = new Size(nameof(Huge));
 
-        private static readonly HashSet<string> ValidSizeValues = new HashSet<string>
+        private static readonly HashSet<string> ValidSizeValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         nameof(Small),
         nameof(Medium),

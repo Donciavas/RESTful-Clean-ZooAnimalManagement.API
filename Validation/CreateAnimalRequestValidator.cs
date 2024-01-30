@@ -9,7 +9,7 @@ namespace ZooAnimalManagement.API.Validation
         {
             RuleFor(x => x.Species).NotEmpty();
             RuleFor(x => x.Food).NotEmpty();
-            RuleFor(x => x.Amount).NotEmpty();
+            RuleFor(x => x.Amount).NotEmpty().GreaterThan(0);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace ZooAnimalManagement.API.Validation
             RuleFor(x => x.Name).NotEmpty();
             RuleFor(x => x.Size).NotEmpty();
             RuleFor(x => x.Location).NotEmpty();
+            RuleFor(x => x.Objects).NotEmpty().ForEach( ob => ob.NotEmpty());
         }
     }
 }

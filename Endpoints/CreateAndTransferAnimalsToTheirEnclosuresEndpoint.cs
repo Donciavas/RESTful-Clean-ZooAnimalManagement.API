@@ -10,7 +10,7 @@ using ZooAnimalManagement.API.Services;
 
 namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
 {
-    [HttpPost("upload animals, enclosures and accommodate"), AllowAnonymous]
+    [HttpPost("upload animals, enclosures and transfer to accommodate"), AllowAnonymous]
     public class CreateAndTransferAnimalsToTheirEnclosuresEndpoint : Endpoint<CreateAnimalsAndEnclosuresRequest, GetAllEnclosuresResponse>
     {
         private readonly IAnimalService _animalService;
@@ -26,25 +26,15 @@ namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
 
         public override async Task HandleAsync(CreateAnimalsAndEnclosuresRequest request, CancellationToken ct)
         {
-            if (request.Animals.Any(animal => animal == null || string.IsNullOrWhiteSpace(animal.Species))) // leaving others unprotected until next code push 
+            if (!(request.Animals != null && request.Animals.Any()) || !(request.Enclosures != null && request.Enclosures.Any())) 
             {
-                var message = $"Invalid data found in the 'animals' list";
+                var message = $"Both, animal and enclosure lists, must be provided";
                 throw new ValidationException(message, new[]
                 {
             new ValidationFailure(nameof(CreateAnimalsAndEnclosuresRequest.Animals), message)
         });
             }
 
-            if (request.Enclosures.Any(enclosure => enclosure == null || string.IsNullOrWhiteSpace(enclosure.Name))) // leaving others unprotected until next code push 
-            {
-                var message = $"Invalid data found in the 'enclosures' list";
-                throw new ValidationException(message, new[]
-                {
-            new ValidationFailure(nameof(CreateAnimalsAndEnclosuresRequest.Enclosures), message)
-        });
-            }
-
-            if (request.Animals != null && request.Animals.Any())
             foreach (var animalDto in request.Animals)
             {
                 var animal = animalDto.ToAnimal();
@@ -52,7 +42,6 @@ namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
                 await _animalService.CreateAsync(animal);
             }
 
-            if (request.Enclosures != null && request.Enclosures.Any())
             foreach (var enclosureDto in request.Enclosures)
             {
                 var enclosure = enclosureDto.ToEnclosure();
@@ -65,7 +54,7 @@ namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
             IEnumerable<Enclosure> enclosureList = new List<Enclosure>();
             enclosureList = await _enclosureService.GetAllAsync();
 
-            if ((animalList != null && animalList.Any()) && (enclosureList != null && enclosureList.Any()))
+            if (animalList.Any() && enclosureList.Any())
             {
                 IEnumerable<Enclosure> animalAccommodatedList = await _enclosureAssignmentService.AssignAllAnimalsToEnclosuresAsync(animalList.ToList(), enclosureList.ToList());
                 var enclosureResponse = animalAccommodatedList.ToEnclosuresResponse();

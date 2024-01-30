@@ -42,7 +42,7 @@ namespace ZooAnimalManagement.API.Mapping
                 Size = Size.FromString(request.Size),
                 Location = Location.From(request.Location),
                 Objects = EnclosureObjects.From(request.Objects).Value,
-                Animals = request.Animals
+                Animals = request.Animals // not assigned until I decide to let insert/ update Animals from here or not
             };
         }
 
@@ -55,7 +55,7 @@ namespace ZooAnimalManagement.API.Mapping
                 Size = Size.FromString(request.Size),
                 Location = Location.From(request.Location),
                 Objects = EnclosureObjects.From(request.Objects).Value,
-                Animals = request.Animals
+                Animals = request.Animals // is overwritten until I decide to let insert/ update Animals from here or not
             };
         }
     }

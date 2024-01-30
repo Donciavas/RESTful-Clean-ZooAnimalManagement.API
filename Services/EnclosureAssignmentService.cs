@@ -3,7 +3,6 @@ using FluentValidation.Results;
 using ZooAnimalManagement.API.Contracts.Requests;
 using ZooAnimalManagement.API.Domain;
 using ZooAnimalManagement.API.Domain.Common.Animal;
-using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Repositories;
 
 namespace ZooAnimalManagement.API.Services
@@ -23,12 +22,7 @@ namespace ZooAnimalManagement.API.Services
             var herbivores = allAnimals.Where(animal => animal.Food == Food.From("Herbivore")).ToList();
 
             await AssignAnimalsToEnclosuresAsync(carnivores, allEnclosures, true);
-            await AssignAnimalsToEnclosuresAsync(herbivores, allEnclosures, false);
-
-            foreach (var enclosure in allEnclosures)
-            {
-                await _enclosureRepository.UpdateAsync(enclosure.ToEnclosureDto());
-            }
+            await AssignAnimalsToEnclosuresAsync(herbivores, allEnclosures, false);           
             
             return allEnclosures;
         }
@@ -68,12 +62,14 @@ namespace ZooAnimalManagement.API.Services
         {
             var suitableEnclosure = sortedEnclosures.FirstOrDefault(e =>
                 e.Animals.Any(a => a.Species == animal.Species) ||
-                (e.Animals.Count < 2 && e.Animals.All(a => a.Food == animal.Food)));
+                (e.Animals.Count < 2 && e.Animals.All(a => a.Food == animal.Food))); // accommodate animals based on rules,
+                                                                                     // until there is enough enclosures left after Carnivore
+                                                                                     // accommodation, let herbivore live as comfortably as carnivore
 
             if (suitableEnclosure == null)
             {
                 suitableEnclosure = sortedEnclosures.FirstOrDefault(e =>
-                e.Animals.All(a => a.Food == Food.From("Herbivore")));
+                e.Animals.All(a => a.Food == Food.From("Herbivore"))); // if we lack enclosures to accommodate animals comfortably, then squeeze herbivore into single enclosure
             }
 
             if (suitableEnclosure != null)

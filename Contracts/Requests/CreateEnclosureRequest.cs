@@ -8,6 +8,7 @@ namespace ZooAnimalManagement.API.Contracts.Requests
         public string Size { get; init; } = default!;
         public string Location { get; init; } = default!;
         public List<string> Objects { get; init; } = default!;
-        public List<Animal> Animals { get; internal set; } = new();
+        public List<Animal> Animals { get; internal set; } = new(); // not in use, not assigned to insert, update Animals, until It is not
+                                                                    // allowed to update Animals with Enclosure Update
     }
 }

@@ -28,6 +28,7 @@ namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
             }
 
             var enclosure = req.ToEnclosure();
+            enclosure.Animals = existingEnclosure.Animals;
             await _enclosureService.UpdateAsync(enclosure);
 
             var enclosureResponse = enclosure.ToEnclosureResponse();

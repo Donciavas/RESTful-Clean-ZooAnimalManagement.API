@@ -8,7 +8,7 @@ namespace ZooAnimalManagement.API.Domain.Common.Enclosure
     public class EnclosureObjects : ValueOf<List<string>, EnclosureObjects>
     {
         private static readonly Regex ValidObjectRegex =
-            new Regex("^[a-zA-Z ,]+$", RegexOptions.Compiled);
+            new("^[a-z ,]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         protected override void Validate()
         {

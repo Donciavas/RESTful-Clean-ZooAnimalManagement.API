@@ -135,8 +135,6 @@ namespace ZooAnimalManagement.API.Repositories
 
                 if (updateResult > 0)
                 {
-                    await UpdateEnclosureAnimalsAsync(enclosure, connection, transaction);
-
                     await connection.ExecuteAsync(
                         "DELETE FROM Objects WHERE EnclosureId = @EnclosureId",
                         new { EnclosureId = enclosure.Id },
@@ -166,21 +164,6 @@ namespace ZooAnimalManagement.API.Repositories
             }
         }
 
-        private async Task UpdateEnclosureAnimalsAsync(EnclosureDto enclosure, IDbConnection connection, IDbTransaction transaction)
-        {
-            await connection.ExecuteAsync(
-                "DELETE FROM EnclosureAnimals WHERE EnclosureId = @EnclosureId",
-                new { EnclosureId = enclosure.Id },
-                transaction);
-
-            var enclosureAnimals = enclosure.Animals.Select(animalId => new { EnclosureId = enclosure.Id, AnimalId = animalId.Id });
-            await connection.ExecuteAsync(
-                @"INSERT INTO EnclosureAnimals (EnclosureId, AnimalId) 
-                    VALUES (@EnclosureId, @AnimalId)",
-                enclosureAnimals,
-                transaction);
-        }
-
         public async Task<bool> DeleteEnclosureAndObjectsAsync(Guid id)
         {
             using var connection = await _connectionFactory.CreateConnectionAsync();
@@ -188,14 +171,13 @@ namespace ZooAnimalManagement.API.Repositories
 
             try
             {
-                var affectedRows = await connection.ExecuteAsync(
-                    @"DELETE FROM EnclosureAnimals WHERE EnclosureId = @EnclosureId;
-                        DELETE FROM Enclosures WHERE Id = @EnclosureId;
-                            DELETE FROM Objects WHERE EnclosureId = @EnclosureId"
-                                , new { EnclosureId = id.ToString() }, transaction);
+                await connection.ExecuteAsync(
+                    "DELETE FROM Enclosures WHERE Id = @EnclosureId",
+                    new { EnclosureId = id.ToString() },
+                    transaction);
 
                 transaction.Commit();
-                return affectedRows > 0;
+                return true;
             }
             catch (Exception)
             {

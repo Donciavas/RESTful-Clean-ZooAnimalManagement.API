@@ -35,16 +35,62 @@ namespace ZooAnimalManagement.API.Database
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             EnclosureId CHAR(36) NOT NULL,
             Object TEXT NOT NULL,
-            FOREIGN KEY (EnclosureId) REFERENCES Enclosures(Id)
+            FOREIGN KEY (EnclosureId) REFERENCES Enclosures(Id) ON DELETE CASCADE
             )");
 
             await connection.ExecuteAsync(@"CREATE TABLE IF NOT EXISTS EnclosureAnimals (
             EnclosureId CHAR(36) NOT NULL,
             AnimalId CHAR(36) NOT NULL,
             PRIMARY KEY (EnclosureId, AnimalId),
-            FOREIGN KEY (EnclosureId) REFERENCES Enclosures(Id),
-            FOREIGN KEY (AnimalId) REFERENCES Animals(Id)
+            FOREIGN KEY (EnclosureId) REFERENCES Enclosures(Id) ON DELETE CASCADE,
+            FOREIGN KEY (AnimalId) REFERENCES Animals(Id) ON DELETE CASCADE
             )");
+
+            await connection.ExecuteAsync(@"CREATE TRIGGER IF NOT EXISTS UpdateEnclosureIdOnAnimals_Insert
+                BEFORE INSERT ON Animals
+                FOR EACH ROW
+                BEGIN
+                 INSERT OR IGNORE INTO EnclosureAnimals (EnclosureId, AnimalId)
+                    VALUES (NEW.EnclosureId, NEW.Id);
+                END");
+
+            await connection.ExecuteAsync(@"CREATE TRIGGER IF NOT EXISTS UpdateEnclosureIdOnAnimals_Update
+                BEFORE UPDATE ON Animals
+                FOR EACH ROW
+                BEGIN
+                    DELETE FROM EnclosureAnimals 
+                    WHERE AnimalId = NEW.Id AND NEW.EnclosureId IS NULL;
+
+                    UPDATE EnclosureAnimals 
+                    SET EnclosureId = NEW.EnclosureId
+                    WHERE AnimalId = NEW.Id;
+
+                    INSERT OR IGNORE INTO EnclosureAnimals (EnclosureId, AnimalId)
+                    VALUES (NEW.EnclosureId, NEW.Id);
+                END");
+
+            await connection.ExecuteAsync(@"CREATE TRIGGER IF NOT EXISTS UpdateEnclosureIdOnEnclosures
+                AFTER UPDATE ON Enclosures
+                FOR EACH ROW
+                BEGIN
+                    UPDATE Animals SET EnclosureId = NEW.Id WHERE EnclosureId = OLD.Id;
+                    UPDATE EnclosureAnimals SET EnclosureId = NEW.Id WHERE EnclosureId = OLD.Id;
+                END");
+
+            await connection.ExecuteAsync(@"CREATE TRIGGER IF NOT EXISTS DeleteEnclosure
+                AFTER DELETE ON Enclosures
+                FOR EACH ROW
+                BEGIN
+                    UPDATE Animals SET EnclosureId = NULL WHERE EnclosureId = OLD.Id;
+                    DELETE FROM EnclosureAnimals WHERE EnclosureId = OLD.Id;
+                END");
+
+            await connection.ExecuteAsync(@"CREATE TRIGGER IF NOT EXISTS DeleteAnimal
+                AFTER DELETE ON Animals
+                FOR EACH ROW
+                BEGIN
+                    DELETE FROM EnclosureAnimals WHERE AnimalId = OLD.Id;
+                END");
         }
     }
 }
