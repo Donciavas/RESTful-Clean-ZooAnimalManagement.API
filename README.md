@@ -1,11 +1,9 @@
-#Breadcrumbs
 
     RESTful-Clean-ZooAnimalManagement.API
-#
 
 Almost done. Lacking unit tests and deciding if I should change database triggers into procedures, and call them directly. 
 
-![image](https://github.com/Donciavas/RESTful-Clean-ZooAnimalManagement.API/assets/96888736/e627f4c9-8fa4-4c50-8e30-f683ec3e9049)
+![ZooAnimalManagementSystemTask](https://github.com/Donciavas/RESTful-Clean-ZooAnimalManagement.API/assets/96888736/5672f09b-928c-4932-90fe-b6d4f9f0f2eb)
 
 ![image](https://github.com/Donciavas/RESTful-Clean-ZooAnimalManagement.API/assets/96888736/45018287-96f3-4eca-b1cb-5f10ea2d88e3)
 
@@ -35,9 +33,7 @@ Review Focus:
     2. Ensure proper handling of grouping rules during animal transfer.
     3. Implement secure and efficient REST API for data input and CRUD operations.
 
-Data Examples:
-
-animals.json file:
+Data to input Example:
 
 {
     "animals": [
@@ -96,13 +92,8 @@ animals.json file:
             "food": "Carnivore",
             "amount": 5
         }
-    ]
-}
-
-enclosures.json file:
-
-{
-    "enclosures": [
+    ],
+"enclosures": [
         {
             "name": "Enclosure 1",
             "size": "Large",
