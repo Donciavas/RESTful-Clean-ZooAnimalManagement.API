@@ -30,8 +30,8 @@ namespace ZooAnimalManagement.API.Services
         private async Task AssignAnimalsToEnclosuresAsync(List<Animal> animals, List<Enclosure> allEnclosures, bool isCarnivore)
         {
             var sortedEnclosures = isCarnivore
-                ? allEnclosures.OrderByDescending(e => e.Size).ToList()
-                : allEnclosures.OrderBy(e => e.Size).ToList();
+                ? allEnclosures.OrderBy(e => e.Size).ToList()
+                : allEnclosures.OrderByDescending(e => e.Size).ToList();
 
             foreach (var animal in animals)
             {

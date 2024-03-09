@@ -11,7 +11,7 @@ namespace ZooAnimalManagement.API.Domain.Common.Animal
             var validFoodType = new[] { "Carnivore", "Herbivore" };
             if (!validFoodType.Contains(Value, StringComparer.OrdinalIgnoreCase))
             {
-                var message = $"{Value} is not a valid food type. Choose 'Carnivore' or 'Herbivore'";
+                var message = $"{Value} is not a valid food type. Choose between 'Carnivore' or 'Herbivore'";
                 throw new ValidationException(message, new[]
                 {
                 new ValidationFailure(nameof(Food), message)

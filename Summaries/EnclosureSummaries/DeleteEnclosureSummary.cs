@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
-using ZooAnimalManagement.API.Endpoints.AnimalsEndpoints;
+using ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints;
 
-namespace ZooAnimalManagement.API.Summaries
+namespace ZooAnimalManagement.API.Summaries.EnclosureSummaries
 {
     public class DeleteEnclosureSummary : Summary<DeleteEnclosureEndpoint>
     {

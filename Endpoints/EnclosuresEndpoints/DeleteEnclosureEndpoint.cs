@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using ZooAnimalManagement.API.Contracts.Requests;
 using ZooAnimalManagement.API.Services;
 
-namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
+namespace ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints
 {
     [HttpDelete("enclosures/{id:guid}"), AllowAnonymous]
     public class DeleteEnclosureEndpoint : Endpoint<DeleteEnclosureRequest>

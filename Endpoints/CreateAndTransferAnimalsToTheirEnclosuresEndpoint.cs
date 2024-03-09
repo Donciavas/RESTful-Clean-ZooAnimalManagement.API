@@ -8,7 +8,7 @@ using ZooAnimalManagement.API.Domain;
 using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Services;
 
-namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
+namespace ZooAnimalManagement.API.Endpoints
 {
     [HttpPost("upload animals, enclosures and transfer to accommodate"), AllowAnonymous]
     public class CreateAndTransferAnimalsToTheirEnclosuresEndpoint : Endpoint<CreateAnimalsAndEnclosuresRequest, GetAllEnclosuresResponse>
@@ -26,7 +26,7 @@ namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
 
         public override async Task HandleAsync(CreateAnimalsAndEnclosuresRequest request, CancellationToken ct)
         {
-            if (!(request.Animals != null && request.Animals.Any()) || !(request.Enclosures != null && request.Enclosures.Any())) 
+            if (!(request.Animals != null && request.Animals.Any()) || !(request.Enclosures != null && request.Enclosures.Any()))
             {
                 var message = $"Both, animal and enclosure lists, must be provided";
                 throw new ValidationException(message, new[]
@@ -62,7 +62,7 @@ namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
             }
             else
             {
-                var message = $"There is not enough data in the database to process animal tranfer. Number of animal species: {animalList.Count()}, enclosures: {enclosureList.Count()}";
+                var message = $"There is not enough data in the database to process animal transfer. Number of animal species: {animalList.Count()}, enclosures: {enclosureList.Count()}";
                 throw new ValidationException(message, new[]
                 {
                 new ValidationFailure(nameof(CreateAnimalsAndEnclosuresRequest), message)

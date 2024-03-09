@@ -1,12 +1,12 @@
 ﻿using FastEndpoints;
 using ZooAnimalManagement.API.Contracts.Responses;
-using ZooAnimalManagement.API.Endpoints.AnimalsEndpoints;
+using ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints;
 
-namespace ZooAnimalManagement.API.Summaries
+namespace ZooAnimalManagement.API.Summaries.EnclosureSummaries
 {
     public class CreateEnclosureSummary : Summary<CreateEnclosureEndpoint>
     {
-        public CreateEnclosureSummary() 
+        public CreateEnclosureSummary()
         {
             Summary = "Creates a new enclosure in the system";
             Description = "Creates a new enclosure in the system";

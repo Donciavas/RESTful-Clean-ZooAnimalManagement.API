@@ -8,8 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ZooAnimalManagement.API.Tests\**" />
+    <Content Remove="ZooAnimalManagement.API.Tests\**" />
+    <EmbeddedResource Remove="ZooAnimalManagement.API.Tests\**" />
+    <None Remove="ZooAnimalManagement.API.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.28" />
-    <PackageReference Include="FastEndpoints" Version="5.21.2" />
+    <PackageReference Include="FastEndpoints" Version="5.21.2">
+      <TreatAsUsed>true</TreatAsUsed>
+    </PackageReference>
     <PackageReference Include="FastEndpoints.Swagger" Version="5.21.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
     <PackageReference Include="ValueOf" Version="2.0.31" />

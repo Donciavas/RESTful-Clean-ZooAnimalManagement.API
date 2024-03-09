@@ -5,43 +5,45 @@ namespace ZooAnimalManagement.API.Domain.Common.Enclosure
 {
     public class Size : IComparable<Size>
     {
-        public static readonly Size Small = new Size(nameof(Small));
-        public static readonly Size Medium = new Size(nameof(Medium));
-        public static readonly Size Large = new Size(nameof(Large));
-        public static readonly Size Huge = new Size(nameof(Huge));
+        public static readonly Size Small = new Size(nameof(Small), 0);
+        public static readonly Size Medium = new Size(nameof(Medium), 1);
+        public static readonly Size Large = new Size(nameof(Large), 2);
+        public static readonly Size Huge = new Size(nameof(Huge), 3);
 
-        private static readonly HashSet<string> ValidSizeValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        nameof(Small),
-        nameof(Medium),
-        nameof(Large),
-        nameof(Huge)
-    };
+        private static readonly Dictionary<string, Size> SizesByName = new Dictionary<string, Size>(StringComparer.OrdinalIgnoreCase)
+        {
+            { nameof(Small), Small },
+            { nameof(Medium), Medium },
+            { nameof(Large), Large },
+            { nameof(Huge), Huge }
+        };
 
         public string Value { get; }
+        public int Order { get; }
 
-        private Size(string value)
+        private Size(string value, int order)
         {
             Value = value;
+            Order = order;
         }
 
         public static Size FromString(string size)
         {
-            if (ValidSizeValues.Contains(size))
+            if (SizesByName.TryGetValue(size, out Size? result))
             {
-                return new Size(size);
+                return result;
             }
 
-            var message = $"{size} is not a valid size. Valid sizes are: {string.Join(", ", ValidSizeValues)}";
+            var message = $"{size} is not a valid size. Valid sizes are: {string.Join(", ", SizesByName.Keys)}";
             throw new ValidationException(message, new[]
             {
-            new ValidationFailure(nameof(Size), message)
-        });
+                new ValidationFailure(nameof(Size), message)
+            });
         }
 
-        public int CompareTo(Size other)
+        public int CompareTo(Size? other)
         {
-            return Comparer<string>.Default.Compare(Value, other.Value);
+            return Order.CompareTo(other?.Order);
         }
     }
 }

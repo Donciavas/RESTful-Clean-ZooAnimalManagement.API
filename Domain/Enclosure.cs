@@ -10,7 +10,6 @@ namespace ZooAnimalManagement.API.Domain
         public Size Size { get; init; } = default!;
         public Location Location { get; init; } = default!;
         public List<string> Objects { get; init; } = default!;
-        public List<Animal> Animals { get; internal set; } = new();
-
+        public List<Animal> Animals { get; internal set; } = default!;
     }
 }

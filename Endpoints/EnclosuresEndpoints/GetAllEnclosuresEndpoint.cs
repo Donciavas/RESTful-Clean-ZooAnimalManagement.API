@@ -4,7 +4,7 @@ using ZooAnimalManagement.API.Contracts.Responses;
 using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Services;
 
-namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
+namespace ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints
 {
     [HttpGet("enclosures"), AllowAnonymous]
     public class GetAllEnclosuresEndpoint : EndpointWithoutRequest<GetAllEnclosuresResponse>

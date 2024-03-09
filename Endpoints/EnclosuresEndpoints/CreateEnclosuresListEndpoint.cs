@@ -4,7 +4,7 @@ using ZooAnimalManagement.API.Contracts.Requests;
 using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Services;
 
-namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
+namespace ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints
 {
     [HttpPost("enclosures/list"), AllowAnonymous]
     public class CreateEnclosuresListEndpoint : Endpoint<CreateEnclosuresListRequest, bool>

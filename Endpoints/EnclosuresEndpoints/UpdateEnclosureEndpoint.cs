@@ -5,7 +5,7 @@ using ZooAnimalManagement.API.Contracts.Responses;
 using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Services;
 
-namespace ZooAnimalManagement.API.Endpoints.AnimalsEndpoints
+namespace ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints
 {
     [HttpPut("enclosures/{id:guid}"), AllowAnonymous]
     public class UpdateEnclosureEndpoint : Endpoint<UpdateEnclosureRequest, EnclosureResponse>

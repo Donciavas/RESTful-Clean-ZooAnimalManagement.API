@@ -1,6 +1,4 @@
-﻿using ZooAnimalManagement.API.Domain;
-
-namespace ZooAnimalManagement.API.Contracts.Data
+﻿namespace ZooAnimalManagement.API.Contracts.Data
 {
     public class EnclosureDto
     {
@@ -9,6 +7,6 @@ namespace ZooAnimalManagement.API.Contracts.Data
         public string Size { get; init; } = default!;
         public string Location { get; init; } = default!;
         public List<string> Objects { get; init; } = default!;
-        public List<AnimalDto> Animals { get; internal set; } = new();
+        public List<AnimalDto> Animals { get; internal set; } = default!;
     }
 }
