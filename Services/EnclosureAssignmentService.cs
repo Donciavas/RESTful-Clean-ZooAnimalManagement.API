@@ -21,24 +21,48 @@ namespace ZooAnimalManagement.API.Services
             var carnivores = allAnimals.Where(animal => animal.Food == Food.From("Carnivore")).ToList();
             var herbivores = allAnimals.Where(animal => animal.Food == Food.From("Herbivore")).ToList();
 
+            // Step 1: Check for excess carnivores
+            if (carnivores.Count > allEnclosures.Count * 2)
+            {
+                var message =
+                    $"Unable to accommodate animals to enclosures due to insufficient amount of enclosures";
+                throw new ValidationException(message, new[]
+                {
+                new ValidationFailure(nameof(CreateAnimalsAndEnclosuresRequest), message)
+            });
+            }
+
             var sortedCarnivoreEnclosures = allEnclosures.OrderBy(e => e.Size).ToList();
             var sortedHerbivoreEnclosures = allEnclosures.OrderByDescending(e => e.Size).ToList();
 
-            await AssignAnimalsToEnclosuresAsync(carnivores, allEnclosures, sortedCarnivoreEnclosures);
-            await AssignAnimalsToEnclosuresAsync(herbivores, allEnclosures, sortedHerbivoreEnclosures);
+            // Step 2: Check for carnivore direct 1:1 assignment to enclosure possibility with an extra enclosures for herbivores. 
+            if ((carnivores.Count + 1) <= allEnclosures.Count)
+            {
+                foreach (var carnivore in carnivores)
+                    await TryAssignAnimalToEmptyEnclosureAsync(sortedCarnivoreEnclosures, carnivore);
+                await AssignAnimalsToEnclosuresAsync(herbivores, sortedHerbivoreEnclosures);
+            }
+
+            // Step 3: Mixed assignment based on enclosure availability. It means 2 different species of meat-eating animals will be grouped together, 
+            //herbivores based on enclosure availability.
+            if (allEnclosures.Count > (carnivores.Count / 2)) // 6 ir 11 praeina
+            {
+                await AssignAnimalsToEnclosuresAsync(carnivores, sortedCarnivoreEnclosures);
+                await AssignAnimalsToEnclosuresAsync(herbivores, sortedHerbivoreEnclosures);
+            }
         }
 
-        private async Task AssignAnimalsToEnclosuresAsync(List<Animal> animals, List<Enclosure> allEnclosures, List<Enclosure> sortedEnclosures)
-        {            
+        private async Task AssignAnimalsToEnclosuresAsync(List<Animal> animals, List<Enclosure> sortedEnclosures)
+        {
             foreach (var animal in animals)
             {
                 bool suitableEnclosureFound = false;
 
-                suitableEnclosureFound = await TryAssignAnimalToEnclosureAsync(sortedEnclosures, animal, suitableEnclosureFound);
+                suitableEnclosureFound = await TryAssignAnimalToEmptyEnclosureAsync(sortedEnclosures, animal);
 
                 if (!suitableEnclosureFound)
                 {
-                    suitableEnclosureFound = await TryAssignAnimalToEmptyEnclosureAsync(sortedEnclosures, animal);
+                    suitableEnclosureFound = await TryAssignAnimalToEnclosureAsync(sortedEnclosures, animal, suitableEnclosureFound);
                 }
 
                 if (!suitableEnclosureFound)
@@ -61,14 +85,7 @@ namespace ZooAnimalManagement.API.Services
                 e.Animals.Any(a => a.Species == animal.Species) ||
                 (e.Animals.Count < 2 && e.Animals.All(a => a.Food == animal.Food))); // accommodate animals based on rules,
                                                                                      // until there is enough enclosures left after Carnivore
-                                                                                     // accommodation, let herbivore live as comfortably as carnivore
-
-            if (suitableEnclosure == null)
-            {
-                suitableEnclosure = sortedEnclosures.FirstOrDefault(e =>
-                e.Animals.All(a => a.Food == Food.From("Herbivore"))); // if we lack enclosures to accommodate animals more comfortable, then squeeze herbivore into single enclosure
-            }
-
+                                                                                     // accommodation, let herbivore live as comfortably as carnivore                       
             if (suitableEnclosure != null)
             {
                 suitableEnclosure.Animals.Add(animal);
@@ -81,15 +98,28 @@ namespace ZooAnimalManagement.API.Services
 
         private async Task<bool> TryAssignAnimalToEmptyEnclosureAsync(List<Enclosure> sortedEnclosures, Animal animal)
         {
-            var suitableEnclosure = sortedEnclosures.FirstOrDefault(e => e.Animals.Count == 0);
+            var foundEmpty = false;
+            Enclosure? suitableEnclosure = null;
+
+            if (sortedEnclosures.Count(e => e.Animals.Count == 0) > 1 || animal.Food == Food.From("Herbivore"))
+            {
+                suitableEnclosure = sortedEnclosures.FirstOrDefault(e => e.Animals.Count == 0);
+            }
+
+            if (suitableEnclosure == null && animal.Food == Food.From("Herbivore"))
+            {
+                suitableEnclosure = sortedEnclosures.FirstOrDefault(e =>
+                e.Animals.All(a => a.Food == Food.From("Herbivore"))); // if we lack enclosures to accommodate animals more comfortable, then squeeze herbivore into single enclosure
+            }
 
             if (suitableEnclosure != null)
             {
                 suitableEnclosure.Animals.Add(animal);
                 await UpdateEnclosureIdForAnimalAsync(animal, suitableEnclosure.Id);
+                foundEmpty = true;
             }
 
-            return suitableEnclosure != null;
+            return foundEmpty;
         }
 
         private async Task UpdateEnclosureIdForAnimalAsync(Animal animal, EnclosureId enclosureId)
