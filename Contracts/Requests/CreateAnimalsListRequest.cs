@@ -1,7 +1,9 @@
-﻿namespace ZooAnimalManagement.API.Contracts.Requests
+﻿using ZooAnimalManagement.API.Contracts.Responses;
+
+namespace ZooAnimalManagement.API.Contracts.Requests
 {
     public class CreateAnimalsListRequest
     {
-        public List<CreateAnimalRequest> Animals { get; init; } = default!;
+        public IEnumerable<CreateAnimalRequest> Animals { get; init; } = Enumerable.Empty<CreateAnimalRequest>();
     }
 }

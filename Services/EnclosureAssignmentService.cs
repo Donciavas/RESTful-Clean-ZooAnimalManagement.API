@@ -16,23 +16,20 @@ namespace ZooAnimalManagement.API.Services
             _animalRepository = animalRepository;
             _enclosureRepository = enclosureRepository;
         }
-        public async Task<IEnumerable<Enclosure>> AssignAllAnimalsToEnclosuresAsync(List<Animal> allAnimals, List<Enclosure> allEnclosures)
+        public async Task AssignAllAnimalsToEnclosuresAsync(List<Animal> allAnimals, List<Enclosure> allEnclosures)
         {
             var carnivores = allAnimals.Where(animal => animal.Food == Food.From("Carnivore")).ToList();
             var herbivores = allAnimals.Where(animal => animal.Food == Food.From("Herbivore")).ToList();
 
-            await AssignAnimalsToEnclosuresAsync(carnivores, allEnclosures, true);
-            await AssignAnimalsToEnclosuresAsync(herbivores, allEnclosures, false);           
-            
-            return allEnclosures;
+            var sortedCarnivoreEnclosures = allEnclosures.OrderBy(e => e.Size).ToList();
+            var sortedHerbivoreEnclosures = allEnclosures.OrderByDescending(e => e.Size).ToList();
+
+            await AssignAnimalsToEnclosuresAsync(carnivores, allEnclosures, sortedCarnivoreEnclosures);
+            await AssignAnimalsToEnclosuresAsync(herbivores, allEnclosures, sortedHerbivoreEnclosures);
         }
 
-        private async Task AssignAnimalsToEnclosuresAsync(List<Animal> animals, List<Enclosure> allEnclosures, bool isCarnivore)
-        {
-            var sortedEnclosures = isCarnivore
-                ? allEnclosures.OrderBy(e => e.Size).ToList()
-                : allEnclosures.OrderByDescending(e => e.Size).ToList();
-
+        private async Task AssignAnimalsToEnclosuresAsync(List<Animal> animals, List<Enclosure> allEnclosures, List<Enclosure> sortedEnclosures)
+        {            
             foreach (var animal in animals)
             {
                 bool suitableEnclosureFound = false;
@@ -69,7 +66,7 @@ namespace ZooAnimalManagement.API.Services
             if (suitableEnclosure == null)
             {
                 suitableEnclosure = sortedEnclosures.FirstOrDefault(e =>
-                e.Animals.All(a => a.Food == Food.From("Herbivore"))); // if we lack enclosures to accommodate animals comfortably, then squeeze herbivore into single enclosure
+                e.Animals.All(a => a.Food == Food.From("Herbivore"))); // if we lack enclosures to accommodate animals more comfortable, then squeeze herbivore into single enclosure
             }
 
             if (suitableEnclosure != null)

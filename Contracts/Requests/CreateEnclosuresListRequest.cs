@@ -2,6 +2,6 @@
 {
     public class CreateEnclosuresListRequest
     {
-        public List<CreateEnclosureRequest> Enclosures { get; init; } = default!;
+        public IEnumerable<CreateEnclosureRequest> Enclosures { get; init; } = Enumerable.Empty<CreateEnclosureRequest>();
     }
 }

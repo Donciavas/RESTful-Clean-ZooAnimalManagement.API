@@ -4,9 +4,9 @@ using ZooAnimalManagement.API.Endpoints;
 
 namespace ZooAnimalManagement.API.Summaries
 {
-    public class CreateAndTransferAnimalsToTheirEnclosuresSummary : Summary<CreateAndTransferAnimalsToTheirEnclosuresEndpoint>
+    public class CreateTransferAnimalsToEnclosuresSummary : Summary<CreateTransferAnimalsToEnclosuresEndpoint>
     {
-        public CreateAndTransferAnimalsToTheirEnclosuresSummary()
+        public CreateTransferAnimalsToEnclosuresSummary()
         {
             Summary = "Creates and transfers animals to unoccupied enclosures in the system";
             Description = "Creates and transfers animals to unoccupied enclosures in the system";

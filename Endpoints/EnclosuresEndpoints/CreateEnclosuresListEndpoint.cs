@@ -1,13 +1,14 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Authorization;
 using ZooAnimalManagement.API.Contracts.Requests;
+using ZooAnimalManagement.API.Contracts.Responses;
 using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Services;
 
 namespace ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints
 {
     [HttpPost("enclosures/list"), AllowAnonymous]
-    public class CreateEnclosuresListEndpoint : Endpoint<CreateEnclosuresListRequest, bool>
+    public class CreateEnclosuresListEndpoint : Endpoint<CreateEnclosuresListRequest, List<EnclosureResponse>>
     {
         private readonly IEnclosureService _enclosureService;
 
@@ -18,14 +19,18 @@ namespace ZooAnimalManagement.API.Endpoints.EnclosuresEndpoints
 
         public override async Task HandleAsync(CreateEnclosuresListRequest request, CancellationToken ct)
         {
-            foreach (var enclosureDto in request.Enclosures)
+            var enclosureResponses = new List<EnclosureResponse>();
+
+            foreach (var enclosureReq in request.Enclosures)
             {
-                var enclosure = enclosureDto.ToEnclosure();
+                var enclosure = enclosureReq.ToEnclosure();
 
                 await _enclosureService.CreateAsync(enclosure);
+
+                enclosureResponses.Add(enclosure.ToEnclosureResponse());
             }
 
-            await SendOkAsync(true, ct);
+            await SendOkAsync(enclosureResponses, ct);
         }
     }
 }

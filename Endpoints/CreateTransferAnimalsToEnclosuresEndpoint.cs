@@ -4,20 +4,19 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using ZooAnimalManagement.API.Contracts.Requests;
 using ZooAnimalManagement.API.Contracts.Responses;
-using ZooAnimalManagement.API.Domain;
 using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Services;
 
 namespace ZooAnimalManagement.API.Endpoints
 {
-    [HttpPost("upload animals, enclosures and transfer to accommodate"), AllowAnonymous]
-    public class CreateAndTransferAnimalsToTheirEnclosuresEndpoint : Endpoint<CreateAnimalsAndEnclosuresRequest, GetAllEnclosuresResponse>
+    [HttpPost("Upload animals, enclosures and transfer to accommodate"), AllowAnonymous]
+    public class CreateTransferAnimalsToEnclosuresEndpoint : Endpoint<CreateAnimalsAndEnclosuresRequest, GetAllEnclosuresResponse>
     {
         private readonly IAnimalService _animalService;
         private readonly IEnclosureService _enclosureService;
         private readonly IEnclosureAssignmentService _enclosureAssignmentService;
 
-        public CreateAndTransferAnimalsToTheirEnclosuresEndpoint(IAnimalService animalService, IEnclosureService enclosureService, IEnclosureAssignmentService enclosureAssignmentService)
+        public CreateTransferAnimalsToEnclosuresEndpoint(IAnimalService animalService, IEnclosureService enclosureService, IEnclosureAssignmentService enclosureAssignmentService)
         {
             _animalService = animalService;
             _enclosureService = enclosureService;
@@ -48,21 +47,22 @@ namespace ZooAnimalManagement.API.Endpoints
                 await _enclosureService.CreateAsync(enclosure);
             }
 
-            IEnumerable<Animal> animalList = new List<Animal>();
-            animalList = await _animalService.GetAllAsync();
+            var animalList = await _animalService.GetAllAsync();
 
-            IEnumerable<Enclosure> enclosureList = new List<Enclosure>();
-            enclosureList = await _enclosureService.GetAllAsync();
+            var enclosureList = await _enclosureService.GetAllAsync();
 
             if (animalList.Any() && enclosureList.Any())
             {
-                IEnumerable<Enclosure> animalAccommodatedList = await _enclosureAssignmentService.AssignAllAnimalsToEnclosuresAsync(animalList.ToList(), enclosureList.ToList());
-                var enclosureResponse = animalAccommodatedList.ToEnclosuresResponse();
-                await SendOkAsync(enclosureResponse, ct);
+                await _enclosureAssignmentService.AssignAllAnimalsToEnclosuresAsync(animalList.ToList(), enclosureList.ToList());
+
+                var filledEnclosures = await _enclosureService.GetAllAsync();
+                var filledEnclosuresResponse = filledEnclosures.ToEnclosuresResponse();
+
+                await SendOkAsync(filledEnclosuresResponse, ct);
             }
             else
             {
-                var message = $"There is not enough data in the database to process animal transfer. Number of animal species: {animalList.Count()}, enclosures: {enclosureList.Count()}";
+                var message = $"There are not enough resources to process animal transfer. Number of animal species: {animalList.Count()}, enclosures: {enclosureList.Count()}";
                 throw new ValidationException(message, new[]
                 {
                 new ValidationFailure(nameof(CreateAnimalsAndEnclosuresRequest), message)

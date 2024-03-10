@@ -4,6 +4,6 @@ namespace ZooAnimalManagement.API.Services
 {
     public interface IEnclosureAssignmentService
     {
-        Task<IEnumerable<Enclosure>> AssignAllAnimalsToEnclosuresAsync(List<Animal> allAnimals, List<Enclosure> allEnclosures);
+        Task AssignAllAnimalsToEnclosuresAsync(List<Animal> allAnimals, List<Enclosure> allEnclosures);
     }
 }
