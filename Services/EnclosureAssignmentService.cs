@@ -16,36 +16,28 @@ namespace ZooAnimalManagement.API.Services
             _animalRepository = animalRepository;
             _enclosureRepository = enclosureRepository;
         }
-        public async Task AssignAllAnimalsToEnclosuresAsync(List<Animal> allAnimals, List<Enclosure> allEnclosures)
-        {
-            var carnivores = allAnimals.Where(animal => animal.Food == Food.From("Carnivore")).ToList();
-            var herbivores = allAnimals.Where(animal => animal.Food == Food.From("Herbivore")).ToList();
-
-            // Step 1: Check for excess carnivores
-            if (carnivores.Count > allEnclosures.Count * 2)
-            {
-                var message =
-                    $"Unable to accommodate animals to enclosures due to insufficient amount of enclosures";
-                throw new ValidationException(message, new[]
-                {
-                new ValidationFailure(nameof(CreateAnimalsAndEnclosuresRequest), message)
-            });
-            }
-
+        public async Task AssignAllAnimalsToEnclosuresAsync(List<Animal> carnivores, List<Animal> herbivores, List<Enclosure> allEnclosures)
+        {           
             var sortedCarnivoreEnclosures = allEnclosures.OrderBy(e => e.Size).ToList();
             var sortedHerbivoreEnclosures = allEnclosures.OrderByDescending(e => e.Size).ToList();
 
-            // Step 2: Check for carnivore direct 1:1 assignment to enclosure possibility with an extra enclosures for herbivores. 
+            // Case 1: Carnivores equal to double the enclosures and no herbivores present
+            if (carnivores.Count == allEnclosures.Count * 2 && herbivores.Count == 0)
+            {
+                await AssignAnimalsToEnclosuresAsync(carnivores, sortedCarnivoreEnclosures);
+                return; // Early return as we've handled all animals in this specific case
+            }
+
+            // Case 2: Check for carnivore direct 1:1 assignment to enclosure possibility with an extra enclosures for herbivores. 
             if ((carnivores.Count + 1) <= allEnclosures.Count)
             {
                 foreach (var carnivore in carnivores)
                     await TryAssignAnimalToEmptyEnclosureAsync(sortedCarnivoreEnclosures, carnivore);
                 await AssignAnimalsToEnclosuresAsync(herbivores, sortedHerbivoreEnclosures);
             }
-
-            // Step 3: Mixed assignment based on enclosure availability. It means 2 different species of meat-eating animals will be grouped together, 
+            // Case 3: Mixed assignment based on enclosure availability. It means 2 different species of meat-eating animals will be grouped together, 
             //herbivores based on enclosure availability.
-            if (allEnclosures.Count > (carnivores.Count / 2)) // 6 ir 11 praeina
+            else if (allEnclosures.Count > (carnivores.Count / 2)) // with 6 enclosures and 11 carnivores it goes in, but it shouldn't
             {
                 await AssignAnimalsToEnclosuresAsync(carnivores, sortedCarnivoreEnclosures);
                 await AssignAnimalsToEnclosuresAsync(herbivores, sortedHerbivoreEnclosures);

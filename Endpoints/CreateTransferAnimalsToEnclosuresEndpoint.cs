@@ -4,6 +4,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using ZooAnimalManagement.API.Contracts.Requests;
 using ZooAnimalManagement.API.Contracts.Responses;
+using ZooAnimalManagement.API.Domain.Common.Animal;
 using ZooAnimalManagement.API.Mapping;
 using ZooAnimalManagement.API.Services;
 
@@ -34,40 +35,57 @@ namespace ZooAnimalManagement.API.Endpoints
         });
             }
 
-            foreach (var animalDto in request.Animals)
+            var carnivores = request.Animals
+                .Select(animal => animal.ToAnimal())
+                .Where(animal => animal.Food == Food.From("Carnivore"))
+                .ToList();
+
+            var herbivores = request.Animals
+                .Select(animal => animal.ToAnimal())
+                .Where(animal => animal.Food == Food.From("Herbivore"))
+                .ToList();
+
+            var enclosures = request.Enclosures
+                .Select(enclosure => enclosure.ToEnclosure())
+                .ToList();
+
+            // due to fact, that Carnivores cannot be accommodated with herbivores, and 2 different species of Carnivores can be in one enclosure
+            bool hasExcessCarnivores = carnivores.Count > request.Enclosures.Count * 2;
+            bool hasMaxCarnivoresWithHerbivores = carnivores.Count == request.Enclosures.Count * 2 && herbivores.Count > 0;
+            bool hasNearMaxCarnivoresWithHerbivores = carnivores.Count + 1 == request.Enclosures.Count * 2 && herbivores.Count > 0;
+
+            // Case to kill execution fast: Check for excess carnivores, that would violate rules to accommodate animals
+            if (hasExcessCarnivores || hasMaxCarnivoresWithHerbivores || hasNearMaxCarnivoresWithHerbivores)
             {
-                var animal = animalDto.ToAnimal();
-
-                await _animalService.CreateAsync(animal);
-            }
-
-            foreach (var enclosureDto in request.Enclosures)
-            {
-                var enclosure = enclosureDto.ToEnclosure();
-                await _enclosureService.CreateAsync(enclosure);
-            }
-
-            var animalList = await _animalService.GetAllAsync();
-
-            var enclosureList = await _enclosureService.GetAllAsync();
-
-            if (animalList.Any() && enclosureList.Any())
-            {
-                await _enclosureAssignmentService.AssignAllAnimalsToEnclosuresAsync(animalList.ToList(), enclosureList.ToList());
-
-                var filledEnclosures = await _enclosureService.GetAllAsync();
-                var filledEnclosuresResponse = filledEnclosures.ToEnclosuresResponse();
-
-                await SendOkAsync(filledEnclosuresResponse, ct);
-            }
-            else
-            {
-                var message = $"There are not enough resources to process animal transfer. Number of animal species: {animalList.Count()}, enclosures: {enclosureList.Count()}";
+                var message =
+                    $"Unable to accommodate animals to enclosures due to insufficient amount of enclosures";
                 throw new ValidationException(message, new[]
                 {
                 new ValidationFailure(nameof(CreateAnimalsAndEnclosuresRequest), message)
             });
             }
+
+            foreach (var carnivore in carnivores)
+            {
+                await _animalService.CreateAsync(carnivore);
+            }
+
+            foreach (var herbivore in herbivores)
+            {
+                await _animalService.CreateAsync(herbivore);
+            }
+
+            foreach (var enclosure in enclosures)
+            {
+                await _enclosureService.CreateAsync(enclosure);
+            }
+
+            await _enclosureAssignmentService.AssignAllAnimalsToEnclosuresAsync(carnivores, herbivores, enclosures);
+
+            var filledEnclosures = await _enclosureService.GetAllAsync();
+            var filledEnclosuresResponse = filledEnclosures.ToEnclosuresResponse();
+
+            await SendOkAsync(filledEnclosuresResponse, ct);
         }
     }
 }
